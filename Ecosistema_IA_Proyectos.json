@@ -1,0 +1,337 @@
+{
+  "name": "Ecosistema_IA_Proyectos",
+  "nodes": [
+    {
+      "parameters": {
+        "sendTo": "={{ $json.Email }}",
+        "subject": "=Propuesta Comercial - {{ $json.Nombre_Cliente }}",
+        "message": "={{ $json.Propuesta_IA }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -544,
+        -32
+      ],
+      "id": "0429b1c7-a1f1-4d12-a1ed-ba33253a5a10",
+      "name": "Send a message",
+      "webhookId": "35a5bf6c-506e-4961-a3c4-2bac281dd0d6",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "6nG5ddItORAMdqyS",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "event": "pagedUpdatedInDatabase",
+        "dataSourceId": {
+          "__rl": true,
+          "value": "3de6e76a-050c-80d3-9b02-000bf342effd",
+          "mode": "list",
+          "cachedResultName": "Ecosistema_IA_Proyectos",
+          "cachedResultUrl": "https://app.notion.com/p/3de6e76a050c80b58518fa8b1bceac6c"
+        }
+      },
+      "type": "n8n-nodes-base.notionTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1024,
+        -256
+      ],
+      "id": "01fd7896-4ec3-4d84-a8dd-f8cd954494ae",
+      "name": "Notion Trigger",
+      "credentials": {
+        "notionApi": {
+          "id": "93ZDEssKl80bkhh2",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-flash-lite-latest",
+          "mode": "list",
+          "cachedResultName": "models/gemini-flash-lite-latest"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=IMPORTANTE: Responde OBLIGATORIAMENTE en idioma ESPAÑOL. No utilices inglés bajo ninguna circunstancia.\n\nActúa como un consultor experto en automatización e Inteligencia Artificial.\nGenera una propuesta comercial profesional, clara y concisa en ESPAÑOL para el siguiente cliente:\n\nCliente: {{ $json.Nombre_Cliente }}\nRequerimiento: {{ $json.Requerimiento }}\n\nEstructura de la propuesta:\n1. Resumen del proyecto y alcance técnico.\n2. Presupuesto estimado: Incluye un rango claro en USD (ej. entre $300 y $600 USD) y condiciones de pago (50% anticipo, 50% al finalizar).\n3. Próximos pasos.\n\nReglas estrictas:\n- Redacta el contenido listo para enviar.\n- No uses corchetes ni texto de relleno como [Tu Nombre]. Usa \"Equipo de Consultoría en IA\".\n- Longitud máxima: 1500 caracteres en total."
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        -752,
+        -256
+      ],
+      "id": "528edeec-f11e-4c5f-931c-5946ce490b39",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ouqeIdyHxHWhuPmB",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": {
+          "__rl": true,
+          "value": "={{ $('Notion Trigger').item.json.id }}",
+          "mode": "id"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "=Propuesta_IA|rich_text",
+              "textContent": "={{ $json.content.parts[0].text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 3,
+      "position": [
+        -176,
+        -304
+      ],
+      "id": "49910d69-7ea3-47cf-9087-6eb4a837d827",
+      "name": "Update a database page",
+      "credentials": {
+        "notionApi": {
+          "id": "93ZDEssKl80bkhh2",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "801069de-c2ec-4f4e-8b5b-f11704eb8019",
+              "leftValue": "={{ $json.Estado }}",
+              "rightValue": "Aprobado",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -784,
+        16
+      ],
+      "id": "0be22376-432b-47ad-9111-938569e5e20f",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "event": "pagedUpdatedInDatabase",
+        "dataSourceId": {
+          "__rl": true,
+          "value": "3de6e76a-050c-80d3-9b02-000bf342effd",
+          "mode": "list",
+          "cachedResultName": "Ecosistema_IA_Proyectos",
+          "cachedResultUrl": "https://app.notion.com/p/3de6e76a050c80b58518fa8b1bceac6c"
+        }
+      },
+      "type": "n8n-nodes-base.notionTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1056,
+        16
+      ],
+      "id": "4f4cb1a4-f65c-449c-bd82-a68d1d08d3bf",
+      "name": "Notion Trigger1",
+      "credentials": {
+        "notionApi": {
+          "id": "93ZDEssKl80bkhh2",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1342287668964502",
+        "recipientPhoneNumber": "+59891743993",
+        "textBody": "={{ $json.Propuesta_IA }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        -544,
+        112
+      ],
+      "id": "3ffed8c8-a0c9-40de-a1ee-66144eba6bf4",
+      "name": "Send message",
+      "webhookId": "0535ef35-b1cb-4059-9914-623cc8c1f543",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "IypElrJq9ptaUqIQ",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": {
+          "__rl": true,
+          "value": "={{ $('Notion Trigger').item.json.id }}",
+          "mode": "id"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Estado|select",
+              "selectValue": "Error"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 3,
+      "position": [
+        -176,
+        -80
+      ],
+      "id": "8ecd7e9f-18c0-4144-9fc8-24e7032eba7e",
+      "name": "Update a database page1",
+      "credentials": {
+        "notionApi": {
+          "id": "93ZDEssKl80bkhh2",
+          "name": "Notion account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Notion Trigger": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Update a database page",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update a database page1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a database page": {
+      "main": [
+        []
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "fc0a5544-049f-43cd-a903-6e1abcde4609",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0284c773f37f842fba8c901b751a66e0da60d35d6cf3d676b55f4d2f6edc84fb"
+  },
+  "nodeGroups": [],
+  "id": "2XR5yY1JZzRtTyi9",
+  "tags": []
+}
